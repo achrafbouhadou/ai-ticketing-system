@@ -63,13 +63,18 @@ export default {
       try {
         const { data } = await api.get('/stats');
         this.stats = data;
-        this.$nextTick(() => this.renderChart());
       } finally {
         this.loading = false;
+        this.$nextTick(() => this.renderChart());
       }
     },
     renderChart() {
       if (this.chart) this.chart.destroy();
+
+      if (!this.$refs.chartEl) {
+        console.warn('Canvas element not found');
+        return;
+      }
 
       const ctx = this.$refs.chartEl.getContext('2d');
       const entries = Object.entries(this.stats.category_counts || {});

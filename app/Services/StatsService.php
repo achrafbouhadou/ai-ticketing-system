@@ -19,7 +19,7 @@ class StatsService
             ->groupBy('status')
             ->get()
             ->each(function ($row) use (&$statusCounts) {
-                $key = (string) $row->status;
+                $key = $row->status?->value;
                 if ($key) $statusCounts[$key] = (int) $row->c;
             });
 
@@ -32,7 +32,7 @@ class StatsService
             ->groupBy('category')
             ->get()
             ->each(function ($row) use (&$categoryCounts, &$unclassified) {
-                $key = $row->category ? (string) $row->category : null;
+                $key = $row->category?->value;
                 if ($key === null) {
                     $unclassified = (int) $row->c;
                 } else {
