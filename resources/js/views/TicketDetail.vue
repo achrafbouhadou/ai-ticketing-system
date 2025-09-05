@@ -1,6 +1,6 @@
 <template>
   <section class="ticket-detail">
-    <div v-if="loading" class="ticket-detail__card">
+    <div v-if="loading" class="ticket-detail__card card">
         <div class="skeleton skeleton--title"></div>
         <div class="skeleton skeleton--block" style="height:60px;margin-top:10px;"></div>
 
@@ -16,21 +16,29 @@
         <div class="skeleton skeleton--w25" style="height:36px;margin-top:12px;"></div>
     </div>
 
-    <div v-else-if="ticket" class="ticket-detail__card">
+    <div v-else-if="ticket" class="ticket-detail__card card">
       <h2 class="ticket-detail__title">{{ ticket.subject }}</h2>
 
       <p class="ticket-detail__body">{{ ticket.body }}</p>
 
       <div class="ticket-detail__meta">
-        <div><strong>Current status:</strong> {{ ticket.status || '—' }}</div>
-        <div><strong>Current category:</strong> {{ ticket.category || '—' }}</div>
-        <div><strong>Confidence:</strong> {{ ticket.confidence ?? '—' }}</div>
+        <div>
+          <strong>Status:</strong>
+          <span v-if="ticket.status" :class="['badge','badge--status','badge--status-'+ticket.status]">{{ labelStatus(ticket.status) }}</span>
+          <span v-else>—</span>
+        </div>
+        <div>
+          <strong>Category:</strong>
+          <span v-if="ticket.category" :class="['badge','badge--category','badge--category-'+ticket.category]" :title="ticket.explanation || ''">{{ labelCategory(ticket.category) }}</span>
+          <span v-else class="badge badge--category badge--category-unclassified" :title="ticket.explanation || ''">Unclassified</span>
+        </div>
+        <div><strong>Confidence:</strong> {{ formatConfidence(ticket.confidence) }}</div>
         <div v-if="ticket.explanation"><strong>Explanation:</strong> {{ ticket.explanation }}</div>
       </div>
 
       <form class="ticket-detail__form" @submit.prevent="save">
         <label class="ticket-detail__label">Status</label>
-        <select v-model="form.status" class="ticket-detail__input">
+        <select v-model="form.status" class="ticket-detail__input select">
           <option value="">(no change)</option>
           <option value="open">Open</option>
           <option value="in_progress">In progress</option>
@@ -38,7 +46,7 @@
         </select>
 
         <label class="ticket-detail__label">Category</label>
-        <select v-model="form.category" class="ticket-detail__input">
+        <select v-model="form.category" class="ticket-detail__input select">
           <option :value="null">(clear)</option>
           <option value="billing">Billing</option>
           <option value="technical">Technical</option>
@@ -49,21 +57,21 @@
         <label class="ticket-detail__label">Note</label>
         <textarea
           v-model="form.note"
-          class="ticket-detail__textarea"
+          class="ticket-detail__textarea textarea"
           placeholder="Internal note (optional)"
         ></textarea>
 
         <div class="ticket-detail__actions">
-          <button type="submit" class="ticket-detail__btn" :disabled="saving">
+          <button type="submit" class="btn btn--primary" :disabled="saving">
             {{ saving ? 'Saving…' : 'Save changes' }}
           </button>
           <button type="button"
-                    class="ticket-detail__btn"
+                    class="btn"
                     :disabled="classifying"
                     @click="classify">
             {{ classifying ? 'Classifying…' : 'Run Classification' }}
         </button>
-          <router-link class="ticket-detail__link" to="/tickets">Back to list</router-link>
+          <router-link class="link" to="/tickets">Back to list</router-link>
         </div>
       </form>
     </div>
@@ -91,6 +99,20 @@ export default {
     await this.load();
   },
   methods: {
+    labelStatus(k) {
+      const map = { open: 'Open', in_progress: 'In progress', resolved: 'Resolved' };
+      return map[k] ?? k;
+    },
+    labelCategory(k) {
+      const map = { billing: 'Billing', technical: 'Technical', account: 'Account', other: 'Other', unclassified: 'Unclassified' };
+      return map[k] ?? k;
+    },
+    formatConfidence(c) {
+      if (c === null || c === undefined) return '—';
+      const n = Number(c);
+      if (Number.isNaN(n)) return '—';
+      return n.toFixed(2);
+    },
     async load() {
       this.loading = true;
       try {
@@ -141,18 +163,11 @@ export default {
 </script>
 
 <style>
-.ticket-detail__loading{color:#666}
-.ticket-detail__card{border:1px solid #eee;border-radius:12px;padding:16px;background:#fafafa}
 .ticket-detail__title{margin:0 0 6px 0}
 .ticket-detail__body{white-space:pre-wrap;margin:8px 0 16px 0}
 .ticket-detail__meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .ticket-detail__form{display:grid;gap:8px}
 .ticket-detail__label{font-weight:600}
-.ticket-detail__input,.ticket-detail__textarea{
-  padding:8px;border:1px solid #eee;border-radius:8px
-}
 .ticket-detail__actions{display:flex;gap:12px;align-items:center;margin-top:8px}
-.ticket-detail__btn{padding:8px 12px;border:1px solid #eee;border-radius:8px;background:#f7f7f7;cursor:pointer}
-.ticket-detail__link{text-decoration:none}
-.ticket-detail__empty{color:#666}
+.ticket-detail__empty{color:var(--muted)}
 </style>

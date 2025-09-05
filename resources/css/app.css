@@ -1,33 +1,113 @@
-:root { --fg:#111; --muted:#666; --bg:#fff; --line:#eee; }
+/* Design system: light/dark, modern UI, BEM-friendly */
+:root {
+  --fg:#111827; /* slate-900 */
+  --muted:#6b7280; /* gray-500 */
+  --bg:#f8fafc; /* slate-50 */
+  --surface:#ffffff;
+  --surface-2:#f1f5f9; /* slate-100 */
+  --line:#e5e7eb; /* gray-200 */
+  --brand:#4f46e5; /* indigo-600 */
+  --radius:12px; --radius-sm:8px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.06);
+
+  /* Status & category hues */
+  --status-open:#16a34a; /* green-600 */
+  --status-in_progress:#eab308; /* amber-500 */
+  --status-resolved:#0284c7; /* sky-600 */
+
+  --cat-billing:#f59e0b; /* amber-500 */
+  --cat-technical:#7c3aed; /* violet-600 */
+  --cat-account:#3b82f6; /* blue-500 */
+  --cat-other:#64748b; /* slate-500 */
+  --cat-unclassified:#94a3b8; /* slate-400 */
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --fg:#e5e7eb; /* gray-200 */
+  --muted:#9ca3af; /* gray-400 */
+  --bg:#0b1220; /* deep */
+  --surface:#0f172a; /* slate-900 */
+  --surface-2:#111827; /* gray-900 */
+  --line:rgba(255,255,255,0.12);
+  --brand:#6366f1; /* indigo-500 */
+  --shadow: 0 1px 2px rgba(0,0,0,0.6), 0 6px 16px rgba(0,0,0,0.5);
+}
+
 *{box-sizing:border-box}
-body{margin:0;color:var(--fg);background:var(--bg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+body{margin:0;color:var(--fg);background:var(--bg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
 
-.layout__header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
-.layout__brand{margin:0;font-size:18px}
-.layout__nav a{margin-left:12px;text-decoration:none}
+/* Layout */
+.layout__header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:10}
+.layout__brand{margin:0;font-size:18px;letter-spacing:0.2px}
+.layout__nav{display:flex;gap:8px;align-items:center}
+.layout__nav a{padding:8px 10px;border-radius:10px;color:var(--fg);text-decoration:none;border:1px solid transparent}
+.layout__nav a.router-link-active{background:var(--surface-2);border-color:var(--line)}
+.layout__nav .theme-toggle{margin-left:6px}
 
-.layout__main{max-width:1000px;margin:0 auto;padding:16px}
+.layout__main{max-width:1060px;margin:0 auto;padding:16px}
 
-.ticket-list__toolbar{display:flex;gap:8px;margin-bottom:16px}
-.ticket-list__search, .ticket-list__select, .ticket-list__input, .ticket-list__textarea{padding:8px;border:1px solid var(--line);border-radius:8px;width:100%}
-.ticket-list__btn{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#f7f7f7;cursor:pointer}
-.ticket-list__create{display:grid;grid-template-columns:1fr;gap:8px;margin:16px 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafafa}
-.ticket-list__loading{color:var(--muted)}
-.ticket-list__table{width:100%;border-collapse:collapse;border:1px solid var(--line)}
-.ticket-list__table th, .ticket-list__table td{padding:10px;border-top:1px solid var(--line);text-align:left}
-.ticket-list__pager{display:flex;gap:10px;align-items:center;margin-top:12px}
-.ticket-list__empty{color:var(--muted)}
+/* Elements */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;transition:all .12s ease;box-shadow:none}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.btn--primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn--ghost{background:transparent}
+.btn--icon{padding:8px;border-radius:50%;width:36px;height:36px;justify-content:center}
+.btn--sm{padding:6px 10px;border-radius:8px;font-size:14px}
 
+.input, .select, .textarea,
+.ticket-list__search, .ticket-list__select, .ticket-list__input, .ticket-list__textarea {
+  padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);outline:none;transition:border .12s ease, box-shadow .12s ease; width:100%;
+}
+.input:focus, .select:focus, .textarea:focus,
+.ticket-list__search:focus, .ticket-list__select:focus, .ticket-list__input:focus, .ticket-list__textarea:focus{
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px color-mix(in oklab, var(--brand) 20%, transparent);
+}
+
+.link{color:var(--brand);text-decoration:none}
+.link:hover{text-decoration:underline}
+
+.card, .ticket-list__create, .ticket-detail__card{border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:var(--surface);box-shadow:none}
+
+.table, .ticket-list__table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.table thead th, .ticket-list__table thead th{background:var(--surface-2);font-weight:600;color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:.04em}
+.table th, .table td, .ticket-list__table th, .ticket-list__table td{padding:12px 12px;border-top:1px solid var(--line);text-align:left}
+.table tbody tr:hover, .ticket-list__table tbody tr:hover{background:color-mix(in oklab, var(--surface-2) 70%, transparent)}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.badge--status{background:var(--surface-2)}
+.badge--status-open{color:var(--status-open);border-color:color-mix(in oklab, var(--status-open) 40%, transparent)}
+.badge--status-in_progress{color:var(--status-in_progress);border-color:color-mix(in oklab, var(--status-in_progress) 40%, transparent)}
+.badge--status-resolved{color:var(--status-resolved);border-color:color-mix(in oklab, var(--status-resolved) 40%, transparent)}
+.badge--category{background:var(--surface-2)}
+.badge--category-billing{color:var(--cat-billing);border-color:color-mix(in oklab, var(--cat-billing) 40%, transparent)}
+.badge--category-technical{color:var(--cat-technical);border-color:color-mix(in oklab, var(--cat-technical) 40%, transparent)}
+.badge--category-account{color:var(--cat-account);border-color:color-mix(in oklab, var(--cat-account) 40%, transparent)}
+.badge--category-other{color:var(--cat-other);border-color:color-mix(in oklab, var(--cat-other) 40%, transparent)}
+.badge--category-unclassified{color:var(--cat-unclassified);border-color:color-mix(in oklab, var(--cat-unclassified) 40%, transparent)}
+
+.pager, .ticket-list__pager{display:flex;gap:10px;align-items:center;margin-top:12px}
+.ticket-list__empty, .ticket-list__loading{color:var(--muted)}
+
+/* Tickets list layout */
+.ticket-list__toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.ticket-list__btn{ /* allow legacy selector to pick modern button styles */ }
+.ticket-list__create{display:grid;grid-template-columns:1fr;gap:8px;margin:16px 0}
+
+/* Skeletons */
 @keyframes shimmer {
   0% { background-position: -200px 0; }
   100% { background-position: calc(200px + 100%) 0; }
 }
 .skeleton {
   display:inline-block;
-  background: linear-gradient(90deg, #eee 25%, #f6f6f6 37%, #eee 63%);
+  background: linear-gradient(90deg, color-mix(in oklab, var(--line) 100%, var(--surface) 0%) 25%, color-mix(in oklab, var(--surface) 100%, var(--bg) 0%) 37%, color-mix(in oklab, var(--line) 100%, var(--surface) 0%) 63%);
   background-size: 200px 100%;
   animation: shimmer 1.2s infinite ease;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   height: 12px;
 }
 .skeleton--title { height: 20px; width: 60%; }
@@ -41,9 +121,9 @@ body{margin:0;color:var(--fg);background:var(--bg);font:16px/1.45 system-ui,-app
 .ticket-list__table--skeleton {
   display:block;
   border:1px solid var(--line);
-  border-radius:12px;
+  border-radius:var(--radius);
   padding:8px 12px;
-  background:#fff;
+  background:var(--surface);
 }
 .skeleton-row {
   display:grid;

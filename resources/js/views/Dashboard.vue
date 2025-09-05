@@ -6,7 +6,7 @@
 
     <div v-else>
       <div class="dashboard__cards">
-        <div class="dashboard__card">
+        <div class="dashboard__card card">
           <h3 class="dashboard__card-title">By Status</h3>
           <ul class="dashboard__list">
             <li v-for="(v,k) in stats.status_counts" :key="'s_'+k">
@@ -16,7 +16,7 @@
           </ul>
         </div>
 
-        <div class="dashboard__card">
+        <div class="dashboard__card card">
           <h3 class="dashboard__card-title">By Category</h3>
           <ul class="dashboard__list">
             <li v-for="(v,k) in stats.category_counts" :key="'c_'+k">
@@ -27,7 +27,7 @@
         </div>
       </div>
 
-      <div class="dashboard__chart">
+      <div class="dashboard__chart card">
         <canvas ref="chartEl" aria-label="Tickets by category bar chart"></canvas>
       </div>
     </div>
@@ -81,19 +81,27 @@ export default {
       const labels = entries.map(([k]) => this.labelCategory(k));
       const values = entries.map(([, v]) => v);
 
+      const css = getComputedStyle(document.documentElement);
+      const textColor = (css.getPropertyValue('--fg') || '#111827').trim();
+      const gridColor = (css.getPropertyValue('--line') || '#e5e7eb').trim();
+      const brand = (css.getPropertyValue('--brand') || '#4f46e5').trim();
+
       this.chart = new Chart(ctx, {
         type: 'bar',
         data: {
           labels,
           datasets: [
-            { label: 'Tickets by Category', data: values },
+            { label: 'Tickets by Category', data: values, backgroundColor: brand, borderColor: brand },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: true } },
-          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+          plugins: { legend: { display: true, labels: { color: textColor } } },
+          scales: {
+            x: { ticks: { color: textColor }, grid: { color: gridColor } },
+            y: { beginAtZero: true, ticks: { precision: 0, color: textColor }, grid: { color: gridColor } },
+          },
         },
       });
     },
@@ -117,17 +125,16 @@ export default {
 
 <style>
 .dashboard__title{margin:0 0 12px 0}
-.dashboard__loading{color:#666}
+.dashboard__loading{color:var(--muted)}
 
 .dashboard__cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.dashboard__card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fafafa}
 .dashboard__card-title{margin:0 0 8px 0}
 
 .dashboard__list{list-style:none;margin:0;padding:0}
-.dashboard__list li{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f0f0f0}
+.dashboard__list li{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)}
 .dashboard__list li:first-child{border-top:none}
-.dashboard__key{color:#444}
+.dashboard__key{color:var(--muted)}
 .dashboard__value{font-weight:700}
 
-.dashboard__chart{height:320px;border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
+.dashboard__chart{height:320px;padding:12px}
 </style>

@@ -4,18 +4,18 @@
     <input
         v-model="filters.q"
         @keyup.enter="load(1)"
-        class="ticket-list__search"
+        class="ticket-list__search input"
         placeholder="Search subject or body..."
     />
 
-    <select v-model="filters.status" @change="load(1)" class="ticket-list__select">
+    <select v-model="filters.status" @change="load(1)" class="ticket-list__select select">
         <option value="">All statuses</option>
         <option value="open">Open</option>
         <option value="in_progress">In progress</option>
         <option value="resolved">Resolved</option>
     </select>
 
-    <select v-model="filters.category" @change="load(1)" class="ticket-list__select">
+    <select v-model="filters.category" @change="load(1)" class="ticket-list__select select">
         <option value="">All categories</option>
         <option value="billing">Billing</option>
         <option value="technical">Technical</option>
@@ -23,13 +23,13 @@
         <option value="other">Other</option>
     </select>
 
-    <select v-model="filters.has_note" @change="load(1)" class="ticket-list__select" style="max-width:140px">
+    <select v-model="filters.has_note" @change="load(1)" class="ticket-list__select select" style="max-width:140px">
         <option :value="''">Any note</option>
         <option :value="'1'">Has note</option>
         <option :value="'0'">No note</option>
     </select>
 
-    <select v-model.number="filters.per_page" @change="load(1)" class="ticket-list__select" style="max-width:120px">
+    <select v-model.number="filters.per_page" @change="load(1)" class="ticket-list__select select" style="max-width:120px">
         <option :value="5">5 / page</option>
         <option :value="10">10 / page</option>
         <option :value="20">20 / page</option>
@@ -37,18 +37,18 @@
         <option :value="100">100 / page</option>
     </select>
 
-    <button @click="load(1)" class="ticket-list__btn">Filter</button>
-    <button @click="exportCsv" class="ticket-list__btn" :disabled="exporting">
+    <button @click="load(1)" class="btn">Filter</button>
+    <button @click="exportCsv" class="btn" :disabled="exporting">
         {{ exporting ? 'Preparing…' : 'Export CSV' }}
     </button>
     </div>
 
 
 
-    <form class="ticket-list__create" @submit.prevent="createTicket">
-      <input v-model="create.subject" placeholder="Subject" required class="ticket-list__input" />
-      <textarea v-model="create.body" placeholder="Body" required class="ticket-list__textarea"></textarea>
-      <button class="ticket-list__btn">Create ticket</button>
+    <form class="ticket-list__create card" @submit.prevent="createTicket">
+      <input v-model="create.subject" placeholder="Subject" required class="ticket-list__input input" />
+      <textarea v-model="create.body" placeholder="Body" required class="ticket-list__textarea textarea"></textarea>
+      <button class="btn btn--primary">New Ticket</button>
     </form>
 
     <div v-if="loading" class="ticket-list__skeleton">
@@ -63,7 +63,7 @@
     </div>
     </div>
     <div v-else>
-    <table class="ticket-list__table" v-if="tickets.length">
+    <table class="ticket-list__table table" v-if="tickets.length">
         <thead>
         <tr>
             <th>Subject</th>
@@ -75,10 +75,16 @@
         </thead>
         <tbody>
         <tr v-for="t in tickets" :key="t.id">
-            <td><router-link :to="`/tickets/${t.id}`">{{ t.subject }}</router-link></td>
-            <td>{{ t.status || '—' }}</td>
-            <td>{{ t.category || '—' }}</td>
-            <td>{{ t.confidence ?? '—' }}</td>
+            <td><router-link class="link" :to="`/tickets/${t.id}`">{{ t.subject }}</router-link></td>
+            <td>
+              <span v-if="t.status" :class="['badge','badge--status', 'badge--status-'+t.status]">{{ labelStatus(t.status) }}</span>
+              <span v-else>—</span>
+            </td>
+            <td>
+              <span v-if="t.category" :class="['badge','badge--category', 'badge--category-'+t.category]" :title="t.explanation || ''">{{ labelCategory(t.category) }}</span>
+              <span v-else class="badge badge--category badge--category-unclassified" :title="t.explanation || ''">Unclassified</span>
+            </td>
+            <td>{{ formatConfidence(t.confidence) }}</td>
             <td>{{ new Date(t.created_at).toLocaleString() }}</td>
         </tr>
         </tbody>
@@ -86,10 +92,10 @@
 
     <p v-else class="ticket-list__empty">No tickets yet.</p>
 
-    <div class="ticket-list__pager" v-if="meta">
-        <button :disabled="!links.prev" @click="go(meta.current_page - 1)">Prev</button>
+    <div class="ticket-list__pager pager" v-if="meta">
+        <button class="btn btn--sm" :disabled="!links.prev" @click="go(meta.current_page - 1)">Prev</button>
         <span>Page {{ meta.current_page }} / {{ meta.last_page }}</span>
-        <button :disabled="!links.next" @click="go(meta.current_page + 1)">Next</button>
+        <button class="btn btn--sm" :disabled="!links.next" @click="go(meta.current_page + 1)">Next</button>
     </div>
     </div>
 
@@ -124,6 +130,20 @@ export default {
     }
   },
   methods: {
+    labelStatus(k) {
+      const map = { open: 'Open', in_progress: 'In progress', resolved: 'Resolved' };
+      return map[k] ?? k;
+    },
+    labelCategory(k) {
+      const map = { billing: 'Billing', technical: 'Technical', account: 'Account', other: 'Other', unclassified: 'Unclassified' };
+      return map[k] ?? k;
+    },
+    formatConfidence(c) {
+      if (c === null || c === undefined) return '—';
+      const n = Number(c);
+      if (Number.isNaN(n)) return '—';
+      return n.toFixed(2);
+    },
     async load(page = 1) {
       this.loading = true;
       try {
@@ -178,4 +198,3 @@ export default {
   }
 };
 </script>
-
