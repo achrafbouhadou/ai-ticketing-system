@@ -16,6 +16,7 @@ class TicketController extends Controller
     {
         $filters = $request->only(['q','status','category']);
         $perPage = (int) $request->input('per_page', 10);
+        $perPage = max(1, min($perPage, 100));
 
         $tickets = $this->service->list($filters, $perPage);
 

@@ -42,8 +42,8 @@ class GenerateTicketsCsv implements ShouldQueue
                         fputcsv($out, [
                             (string) $t->id,
                             $t->subject,
-                            $t->status,
-                            $t->category,
+                            $t->status?->value,
+                            $t->category?->value,
                             is_null($t->confidence) ? null : (float) $t->confidence,
                             optional($t->classified_at)?->toDateTimeString(),
                             $t->note,

@@ -17,3 +17,40 @@ body{margin:0;color:var(--fg);background:var(--bg);font:16px/1.45 system-ui,-app
 .ticket-list__table th, .ticket-list__table td{padding:10px;border-top:1px solid var(--line);text-align:left}
 .ticket-list__pager{display:flex;gap:10px;align-items:center;margin-top:12px}
 .ticket-list__empty{color:var(--muted)}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+.skeleton {
+  display:inline-block;
+  background: linear-gradient(90deg, #eee 25%, #f6f6f6 37%, #eee 63%);
+  background-size: 200px 100%;
+  animation: shimmer 1.2s infinite ease;
+  border-radius: 8px;
+  height: 12px;
+}
+.skeleton--title { height: 20px; width: 60%; }
+.skeleton--block { width: 100%; }
+.skeleton--w10 { width:10%; } .skeleton--w12 { width:12%; }
+.skeleton--w16 { width:16%; } .skeleton--w20 { width:20%; }
+.skeleton--w22 { width:22%; } .skeleton--w25 { width:25%; }
+.skeleton--w30 { width:30%; } .skeleton--w40 { width:40%; }
+.skeleton--w50 { width:50%; }
+
+.ticket-list__table--skeleton {
+  display:block;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:8px 12px;
+  background:#fff;
+}
+.skeleton-row {
+  display:grid;
+  grid-template-columns: 3fr 1fr 1.2fr 0.8fr 2fr;
+  gap:12px;
+  padding:10px 0;
+  border-top:1px solid var(--line);
+}
+.skeleton-row:first-child { border-top:none; }
+

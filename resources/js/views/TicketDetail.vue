@@ -1,6 +1,20 @@
 <template>
   <section class="ticket-detail">
-    <div v-if="loading" class="ticket-detail__loading">Loading…</div>
+    <div v-if="loading" class="ticket-detail__card">
+        <div class="skeleton skeleton--title"></div>
+        <div class="skeleton skeleton--block" style="height:60px;margin-top:10px;"></div>
+
+        <div class="ticket-detail__meta" style="margin-top:16px;">
+            <div class="skeleton skeleton--w30"></div>
+            <div class="skeleton skeleton--w30"></div>
+            <div class="skeleton skeleton--w20"></div>
+            <div class="skeleton skeleton--w50"></div>
+        </div>
+
+        <div class="skeleton skeleton--w40" style="height:36px;margin-top:16px;"></div>
+        <div class="skeleton skeleton--block" style="height:80px;margin-top:8px;"></div>
+        <div class="skeleton skeleton--w25" style="height:36px;margin-top:12px;"></div>
+    </div>
 
     <div v-else-if="ticket" class="ticket-detail__card">
       <h2 class="ticket-detail__title">{{ ticket.subject }}</h2>
