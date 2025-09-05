@@ -82,8 +82,8 @@ class TicketClassifier
         $text = strtolower($t->subject.' '.$t->body);
 
         $map = [
-            'billing'   => ['invoice','refund','payment','charge','bill','pricing'],
             'technical' => ['error','bug','crash','issue','cannot','failed','server','api','database'],
+            'billing'   => ['invoice','refund','payment','charge','bill','pricing'],
             'account'   => ['login','password','account','profile','signup','2fa'],
         ];
 
@@ -100,4 +100,5 @@ class TicketClassifier
 
         return new ClassificationDTO($chosen, $exp, $conf);
     }
+
 }
