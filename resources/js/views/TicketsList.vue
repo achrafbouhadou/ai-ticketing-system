@@ -1,27 +1,33 @@
 <template>
   <section class="ticket-list">
     <div class="ticket-list__toolbar">
-      <input
-        v-model="filters.q"
-        @keyup.enter="load()"
-        class="ticket-list__search"
-        placeholder="Search subject or body..."
-      />
-      <select v-model="filters.status" @change="load()" class="ticket-list__select">
+    <input v-model="filters.q" @keyup.enter="load()" class="ticket-list__search" placeholder="Search subject or body..." />
+
+    <select v-model="filters.status" @change="load()" class="ticket-list__select">
         <option value="">All statuses</option>
         <option value="open">Open</option>
         <option value="in_progress">In progress</option>
         <option value="resolved">Resolved</option>
-      </select>
-      <select v-model="filters.category" @change="load()" class="ticket-list__select">
+    </select>
+
+    <select v-model="filters.category" @change="load()" class="ticket-list__select">
         <option value="">All categories</option>
         <option value="billing">Billing</option>
         <option value="technical">Technical</option>
         <option value="account">Account</option>
         <option value="other">Other</option>
-      </select>
-      <button @click="load()" class="ticket-list__btn">Filter</button>
+    </select>
+
+    <select v-model="filters.has_note" @change="load()" class="ticket-list__select" style="max-width:140px">
+        <option :value="''">Any note</option>
+        <option :value="'1'">Has note</option>
+        <option :value="'0'">No note</option>
+    </select>
+
+    <button @click="load()" class="ticket-list__btn">Filter</button>
+    <button @click="exportCsv" class="ticket-list__btn">Export CSV</button>
     </div>
+
 
     <form class="ticket-list__create" @submit.prevent="createTicket">
       <input v-model="create.subject" placeholder="Subject" required class="ticket-list__input" />
@@ -74,7 +80,7 @@ export default {
       tickets: [],
       meta: null,
       links: {},
-      filters: { q: '', status: '', category: '', per_page: 10 },
+      filters: { q: '', status: '', category: '', has_note: '', per_page: 10 },
       create: { subject: '', body: '' },
     };
   },
@@ -100,6 +106,15 @@ export default {
       this.create.subject = '';
       this.create.body = '';
       this.load(1);
+    },
+    exportCsv() {
+      const params = new URLSearchParams();
+      if (this.filters.q)         params.set('q', this.filters.q);
+      if (this.filters.status)    params.set('status', this.filters.status);
+      if (this.filters.category)  params.set('category', this.filters.category);
+      if (this.filters.has_note !== '') params.set('has_note', this.filters.has_note);
+      const url = `/api/tickets/export?${params.toString()}`;
+      window.open(url, '_blank');
     },
   }
 };

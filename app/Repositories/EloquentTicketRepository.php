@@ -4,9 +4,33 @@ namespace App\Repositories;
 
 use App\Models\Ticket;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class EloquentTicketRepository implements TicketRepository
 {
+
+    public function filteredQuery(array $filters): Builder
+    {
+        $q        = $filters['q']        ?? null;
+        $status   = $filters['status']   ?? null;
+        $category = $filters['category'] ?? null;
+        $hasNote  = isset($filters['has_note']) ? filter_var($filters['has_note'], FILTER_VALIDATE_BOOLEAN) : null;
+
+        return Ticket::query()
+            ->when($q, fn ($qry) =>
+                $qry->where(fn ($w) =>
+                    $w->where('subject','like',"%{$q}%")
+                      ->orWhere('body','like',"%{$q}%")
+                )
+            )
+            ->when($status, fn ($qry) => $qry->where('status', $status))
+            ->when($category, fn ($qry) => $qry->where('category', $category))
+            ->when(!is_null($hasNote), fn ($qry) =>
+                $hasNote ? $qry->whereNotNull('note') : $qry->whereNull('note')
+            );
+    }
+
+    
     public function paginate(array $filters, int $perPage = 10): LengthAwarePaginator
     {
         $q        = $filters['q']        ?? null;
