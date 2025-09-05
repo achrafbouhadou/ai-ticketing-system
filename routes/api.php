@@ -15,5 +15,8 @@ Route::post('tickets/{id}/classify', [ClassificationController::class, 'store'])
 
  Route::get('stats', [StatsController::class, 'index']);
 
- Route::get('tickets/export', TicketExportController::class);
+Route::post('tickets/export', [TicketExportController::class, 'store']);
+Route::get('tickets/export/{id}', [TicketExportController::class, 'show']);
+Route::get('tickets/export/{id}/download', [TicketExportController::class, 'download'])
+    ->name('tickets.export.download');
 

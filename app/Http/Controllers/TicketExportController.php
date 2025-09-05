@@ -2,53 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateTicketsCsv;
+use App\Models\DataExport;
 use App\Repositories\TicketRepository;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TicketExportController extends Controller
 {
-    public function __construct(private TicketRepository $tickets) {}
-
-    public function __invoke(Request $request): StreamedResponse
+    public function store(Request $request): JsonResponse
     {
         $filters = $request->only(['q','status','category','has_note']);
 
-        $filename = 'tickets_' . now()->format('Ymd_His') . '.csv';
-        $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ];
+        $export = DataExport::create([
+            'type'   => 'tickets_csv',
+            'status' => 'pending',
+            'params' => $filters,
+        ]);
 
-        return response()->streamDownload(function () use ($filters) {
-            $out = fopen('php://output', 'w');
+        GenerateTicketsCsv::dispatch($export->id);
 
-            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+        return response()->json([
+            'export_id' => (string) $export->id,
+            'status'    => $export->status,
+        ], 202);
+    }
 
-            fputcsv($out, [
-                'id','subject','status','category','confidence','classified_at','note','created_at'
-            ]);
+    public function show(string $id): JsonResponse
+    {
+        $export = DataExport::findOrFail($id);
 
-            // Stream rows
-            $this->tickets->filteredQuery($filters)
-                ->orderBy('created_at', 'desc')
-                ->select(['id','subject','status','category','confidence','classified_at','note','created_at'])
-                ->chunkById(500, function ($chunk) use ($out) {
-                    foreach ($chunk as $t) {
-                        fputcsv($out, [
-                            (string) $t->id,
-                            $t->subject,
-                            $t->status,
-                            $t->category,
-                            is_null($t->confidence) ? null : (float) $t->confidence,
-                            optional($t->classified_at)->toDateTimeString(),
-                            $t->note,
-                            optional($t->created_at)->toDateTimeString(),
-                        ]);
-                    }
-                });
+        $downloadUrl = null;
+        if ($export->status === 'done' && $export->file_path && Storage::disk('local')->exists($export->file_path)) {
+            $downloadUrl = route('tickets.export.download', ['id' => $export->id]);
+        }
 
-            fclose($out);
-        }, $filename, $headers);
+        return response()->json([
+            'id'         => (string) $export->id,
+            'type'       => $export->type,
+            'status'     => $export->status,
+            'error'      => $export->error,
+            'expires_at' => optional($export->expires_at)?->toIso8601String(),
+            'download_url' => $downloadUrl,
+        ]);
+    }
+
+    public function download(string $id): StreamedResponse
+    {
+        $export = DataExport::findOrFail($id);
+
+        abort_unless($export->status === 'done' && $export->file_path, 404, 'Not ready.');
+        if ($export->expires_at && now()->greaterThan($export->expires_at)) {
+            abort(410, 'Export expired.');
+        }
+        abort_unless(Storage::disk('local')->exists($export->file_path), 404, 'File missing.');
+
+        $filename = 'tickets_'.$export->id.'.csv';
+
+        return Storage::disk('local')->download(
+            $export->file_path,
+            $filename,
+            ['Content-Type' => 'text/csv; charset=UTF-8']
+        );
     }
 }

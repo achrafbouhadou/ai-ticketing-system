@@ -25,7 +25,9 @@
     </select>
 
     <button @click="load()" class="ticket-list__btn">Filter</button>
-    <button @click="exportCsv" class="ticket-list__btn">Export CSV</button>
+    <button @click="exportCsv" class="ticket-list__btn" :disabled="exporting">
+        {{ exporting ? 'Preparing…' : 'Export CSV' }}
+    </button>
     </div>
 
 
@@ -77,6 +79,8 @@ export default {
   data() {
     return {
       loading: false,
+      exporting: false,
+      exportJobId: null,
       tickets: [],
       meta: null,
       links: {},
@@ -107,14 +111,41 @@ export default {
       this.create.body = '';
       this.load(1);
     },
-    exportCsv() {
-      const params = new URLSearchParams();
-      if (this.filters.q)         params.set('q', this.filters.q);
-      if (this.filters.status)    params.set('status', this.filters.status);
-      if (this.filters.category)  params.set('category', this.filters.category);
-      if (this.filters.has_note !== '') params.set('has_note', this.filters.has_note);
-      const url = `/api/tickets/export?${params.toString()}`;
-      window.open(url, '_blank');
+    async exportCsv() {
+      if (this.exporting) return;
+      this.exporting = true;
+      try {
+        const { data } = await api.post('/tickets/export', {
+          q: this.filters.q || undefined,
+          status: this.filters.status || undefined,
+          category: this.filters.category || undefined,
+          has_note: this.filters.has_note !== '' ? this.filters.has_note : undefined,
+        });
+        this.exportJobId = data.export_id;
+        await this.pollExportStatus(this.exportJobId);
+      } finally {
+        this.exporting = false;
+      }
+    },
+
+    async pollExportStatus(id) {
+      const maxMs = 60_000; // 60s budget
+      const start = Date.now();
+
+      // in production i will use   backoff or use SSE/websocket
+      while (Date.now() - start < maxMs) {
+        const { data } = await api.get(`/tickets/export/${id}`);
+        if (data.status === 'done' && data.download_url) {
+          window.open(data.download_url, '_blank');
+          return;
+        }
+        if (data.status === 'failed') {
+          alert('Export failed: ' + (data.error || 'unknown error'));
+          return;
+        }
+        await new Promise(r => setTimeout(r, 1500));
+      }
+      alert('Export is taking longer than expected. You can try again.');
     },
   }
 };
