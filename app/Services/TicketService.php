@@ -24,4 +24,9 @@ class TicketService
     {
         return $this->tickets->findOrFail($id);
     }
+
+    public function update(string $id, array $data): Ticket
+    {
+        return $this->tickets->update($id, $data);
+    }
 }

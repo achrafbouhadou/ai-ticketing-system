@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTicketRequest;
+use App\Http\Requests\UpdateTicketRequest;
 use App\Http\Resources\TicketResource;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
@@ -33,6 +34,12 @@ class TicketController extends Controller
     public function show(string $id)
     {
         $ticket = $this->service->get($id);
+        return new TicketResource($ticket);
+    }
+
+    public function update(UpdateTicketRequest $request, string $id)
+    {
+        $ticket = $this->service->update($id, $request->validated());
         return new TicketResource($ticket);
     }
 }

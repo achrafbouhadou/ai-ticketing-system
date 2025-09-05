@@ -12,4 +12,6 @@ interface TicketRepository
     public function create(array $data): Ticket;
 
     public function findOrFail(string $id): Ticket;
+
+    public function update(string $id, array $data): Ticket;
 }

@@ -35,4 +35,29 @@ class EloquentTicketRepository implements TicketRepository
     {
         return Ticket::findOrFail($id);
     }
+
+    public function update(string $id, array $data): Ticket
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        // Status
+        if (array_key_exists('status', $data)) {
+            $ticket->status = $data['status'];
+        }
+
+        // Category: manual overrides should stick
+        if (array_key_exists('category', $data)) {
+            $ticket->category = $data['category']; 
+            $ticket->category_source = 'manual';
+        }
+
+        // Note
+        if (array_key_exists('note', $data)) {
+            $ticket->note = $data['note']; 
+        }
+
+        $ticket->save();
+
+        return $ticket->fresh();
+    }
 }

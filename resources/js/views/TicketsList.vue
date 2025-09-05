@@ -43,7 +43,7 @@
         </thead>
         <tbody>
           <tr v-for="t in tickets" :key="t.id">
-            <td>{{ t.subject }}</td>
+            <router-link :to="`/tickets/${t.id}`">{{ t.subject }}</router-link>
             <td>{{ t.status || '—' }}</td>
             <td>{{ t.category || '—' }}</td>
             <td>{{ t.confidence ?? '—' }}</td>
