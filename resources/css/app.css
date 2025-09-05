@@ -1,0 +1,19 @@
+:root { --fg:#111; --muted:#666; --bg:#fff; --line:#eee; }
+*{box-sizing:border-box}
+body{margin:0;color:var(--fg);background:var(--bg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+
+.layout__header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.layout__brand{margin:0;font-size:18px}
+.layout__nav a{margin-left:12px;text-decoration:none}
+
+.layout__main{max-width:1000px;margin:0 auto;padding:16px}
+
+.ticket-list__toolbar{display:flex;gap:8px;margin-bottom:16px}
+.ticket-list__search, .ticket-list__select, .ticket-list__input, .ticket-list__textarea{padding:8px;border:1px solid var(--line);border-radius:8px;width:100%}
+.ticket-list__btn{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#f7f7f7;cursor:pointer}
+.ticket-list__create{display:grid;grid-template-columns:1fr;gap:8px;margin:16px 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafafa}
+.ticket-list__loading{color:var(--muted)}
+.ticket-list__table{width:100%;border-collapse:collapse;border:1px solid var(--line)}
+.ticket-list__table th, .ticket-list__table td{padding:10px;border-top:1px solid var(--line);text-align:left}
+.ticket-list__pager{display:flex;gap:10px;align-items:center;margin-top:12px}
+.ticket-list__empty{color:var(--muted)}
