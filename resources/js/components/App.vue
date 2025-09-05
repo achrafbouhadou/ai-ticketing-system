@@ -4,6 +4,7 @@
       <h1 class="layout__brand">Smart Ticket Triage</h1>
       <nav class="layout__nav">
         <router-link to="/tickets">Tickets</router-link>
+        <router-link to="/dashboard" style="margin-left:12px;">Dashboard</router-link>
       </nav>
     </header>
     <main class="layout__main">
