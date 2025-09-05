@@ -43,6 +43,12 @@
           <button type="submit" class="ticket-detail__btn" :disabled="saving">
             {{ saving ? 'Saving…' : 'Save changes' }}
           </button>
+          <button type="button"
+                    class="ticket-detail__btn"
+                    :disabled="classifying"
+                    @click="classify">
+            {{ classifying ? 'Classifying…' : 'Run Classification' }}
+        </button>
           <router-link class="ticket-detail__link" to="/tickets">Back to list</router-link>
         </div>
       </form>
@@ -62,6 +68,7 @@ export default {
     return {
       loading: true,
       saving: false,
+      classifying: false,
       ticket: null,
       form: { status: '', category: null, note: '' },
     };
@@ -105,6 +112,16 @@ export default {
         this.saving = false;
       }
     },
+
+    async classify() {
+      this.classifying = true;
+      try {
+        await api.post(`/tickets/${this.id}/classify`);
+        setTimeout(() => this.load(), 1200);
+      } finally {
+        this.classifying = false;
+      }
+    }
   },
 };
 </script>

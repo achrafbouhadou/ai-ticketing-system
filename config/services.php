@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'classify' => [
+        'rate_per_minute' => env('CLASSIFY_RATE_PER_MINUTE', 10),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+    ],
 
 ];
