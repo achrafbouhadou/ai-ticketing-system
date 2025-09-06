@@ -42,6 +42,7 @@ class TicketClassifier
             ],
             'temperature' => 0.0,
         ]);
+        info('resp' , [$resp]);
 
         $content = $resp->choices[0]->message->content ?? '{}';
         // strip code fences if any

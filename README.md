@@ -1,66 +1,278 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Smart Ticket Triage (Laravel 11 + Vue 3)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A small, production‑ready helpdesk sample: create tickets, edit them, classify with AI (queued), see stats, and export filtered CSV — all with a clean Service/Repository architecture and a Vue SPA.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* **Tickets CRUD**: create, list (filters + pagination), show, update (status, category, note)
+* **AI Classification**: `POST /tickets/{id}/classify` enqueues a job using OpenAI (or a safe fallback)
+* **Stats API + Dashboard**: counts by status & category with a bar chart
+* **CSV Export at Scale**: filter → enqueue export → poll → download CSV (memory‑safe)
+* **Good UX**: per‑page selector, skeleton loaders, simple and fast
+* **Clean Code**: Service + Repository + DTO; small controllers; strong validation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+* **Backend**: Laravel 11 (PHP 8.2+), Eloquent, Queues (database), RateLimiter, Resources
+* **AI SDK**: `openai-php/laravel` (configurable / can be disabled)
+* **Frontend**: Vue 3 (Options API), Vite, Axios, Chart.js, BEM CSS
+* **DB**: any Laravel‑supported DB (SQLite/MySQL/PostgreSQL). Tests use SQLite in‑memory
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Requirements
 
-## Laravel Sponsors
+* PHP 8.2+
+* Composer
+* Node 20+ & npm
+* Database (SQLite/MySQL/PostgreSQL). SQLite is enough for local
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Quick Start (10 steps)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+1. **Clone & enter**
 
-## Contributing
+```bash
+git clone https://github.com/achrafbouhadou/ai-ticketing-system.git smart-ticket-triage
+cd ai-ticketing-system
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2. **Install deps**
 
-## Code of Conduct
+```bash
+composer install
+npm install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. **Env & key**
 
-## Security Vulnerabilities
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+4. **Set DB in `.env`** 
+
+```env
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+```
+
+Create the file:
+
+```bash
+mkdir -p database && touch database/database.sqlite
+```
+
+5. **OpenAI (optional)**
+
+```env
+OPENAI_API_KEY=your-key-or-empty
+OPENAI_CLASSIFY_ENABLED=true
+OPENAI_MODEL=gpt-4o-mini
+```
+
+6. **Queues & rate limit** (already set to database queue; limiter is registered in `AppServiceProvider@boot`)
+
+```env
+QUEUE_CONNECTION=database
+CLASSIFY_RATE_PER_MINUTE=10
+```
+
+7. **Migrate & seed**
+
+```bash
+php artisan migrate --seed
+```
+
+8. **Publish OpenAI config**
+
+```bash
+php artisan vendor:publish --provider="OpenAI\Laravel\ServiceProvider"
+```
+
+9. **Run dev**
+
+```bash
+npm run dev
+php artisan serve
+php artisan queue:work   # separate terminal (for classify & exports)
+```
+
+10. **Build for prod**
+
+```bash
+npm run build
+php artisan optimize
+```
+
+Serve `public/` via your web server.
+
+---
+
+## Environment Variables
+
+```env
+APP_ENV=local
+APP_KEY=base64:...
+
+# DB (choose one)
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+
+# Queues
+QUEUE_CONNECTION=database
+
+# AI classification
+OPENAI_API_KEY=your-key-or-empty
+OPENAI_CLASSIFY_ENABLED=true
+OPENAI_MODEL=gpt-4o-mini
+CLASSIFY_RATE_PER_MINUTE=10
+```
+
+---
+
+## Project Structure (key bits)
+
+```
+app/
+  DTOs/ClassificationDTO.php
+  Http/Controllers/
+    TicketController.php
+    ClassificationController.php
+    StatsController.php
+    TicketExportController.php
+  Http/Requests/
+    StoreTicketRequest.php
+    UpdateTicketRequest.php
+  Http/Resources/TicketResource.php
+  Jobs/
+    ClassifyTicket.php
+    GenerateTicketsCsv.php
+  Models/
+    Ticket.php
+    DataExport.php
+  Providers/
+    RepositoryServiceProvider.php
+  Repositories/
+    TicketRepository.php
+    EloquentTicketRepository.php
+  Services/
+    TicketService.php
+    TicketClassifier.php
+    StatsService.php
+bootstrap/providers.php      # binds RepositoryServiceProvider
+resources/
+  js/
+    app.js
+    router.js
+    services/api.js
+    components/App.vue
+    views/
+      TicketsList.vue
+      TicketDetail.vue
+      Dashboard.vue
+  views/app.blade.php        # Vite + SPA shell
+  css/app.css
+routes/
+  api.php
+  web.php
+```
+
+---
+
+## API Reference (JSON)
+
+### Tickets
+
+* `GET /api/tickets`
+
+  * Query: `q`, `status` (open|in\_progress|resolved), `category` (billing|technical|account|other), `has_note` (1|0), `per_page` (1..100), `page`
+* `POST /api/tickets`
+
+  * Body: `{ subject: string<=200, body: string }`
+* `GET /api/tickets/{id}`
+* `PATCH /api/tickets/{id}`
+
+  * Body: `{ status?, category? (nullable), note? (nullable) }`
+  * If `category` is set here, `category_source` becomes `manual`
+
+### Classification
+
+* `POST /api/tickets/{id}/classify` → `202 Accepted`
+
+  * Throttled by `classify` RateLimiter; enqueues `ClassifyTicket`
+
+### Stats
+
+* `GET /api/stats` → `{ status_counts: {...}, category_counts: {..., unclassified} }`
+
+### CSV Export (queued)
+
+* `POST /api/tickets/export` → `{ export_id, status }`
+
+  * Body accepts same filters as `GET /tickets`
+* `GET /api/tickets/export/{id}` → `{ status, download_url? }`
+* `GET /api/tickets/export/{id}/download` → CSV file
+
+---
+
+## Frontend Routes
+
+* `/tickets` — list, filters, create, export
+* `/tickets/:id` — detail with edit + classify button
+* `/dashboard` — counters + bar chart
+
+---
+
+## Architecture Notes
+
+* **Enums**: `TicketStatus` (open/in\_progress/resolved), `TicketCategory` (billing/technical/account/other)
+* **Ticket fields**: `subject`, `body`, `status`, `category?`, `category_source` (ai|manual), `explanation?`, `confidence?`, `note?`, `classified_at?`
+* **Service/Repository**: `TicketService` orchestrates; `TicketRepository` encapsulates queries & filters
+* **AI**: `TicketClassifier` uses OpenAI chat; strict JSON; safe fallback heuristics (keyword‑based)
+* **Jobs**: `ClassifyTicket` updates AI fields; `GenerateTicketsCsv` streams big exports to `storage/app/exports/`
+* **DataExport**: tracks export `status` (pending|running|done|failed), `params`, `file_path`, `expires_at`
+* **Security**: per‑page is clamped (1..100); validation on all inputs; throttle classify
+
+---
+
+## Testing
+
+* Run all tests
+
+```bash
+php artisan test
+```
+
+* Defaults (via `phpunit.xml`):
+
+  * SQLite in‑memory
+  * `QUEUE_CONNECTION=sync`
+  * `OPENAI_CLASSIFY_ENABLED=false` → fallback path covered
+* Suite covers: tickets create/list/update, classification enqueue, stats, export job & download
+
+---
+
+## Roadmap
+
+* ✅ Tickets CRUD + filters + pagination
+* ✅ Service/Repository architecture
+* ✅ AI classify endpoint + job
+* ✅ Stats endpoint + dashboard chart
+* ✅ CSV export via queued job + polling
+* ✅ UX polish: per‑page + skeletons
+* ⏭️ OpenAPI YAML + Swagger UI
+* ⏭️ Auth (roles), users & companies
+* ⏭️ SSE/WebSocket for live export progress
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT (feel free to use, tweak, and learn from it)

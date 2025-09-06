@@ -11,7 +11,7 @@ Route::apiResource('tickets', TicketController::class)->only([
 ]);
 
 Route::post('tickets/{id}/classify', [ClassificationController::class, 'store'])
-    ->middleware('throttle:classify');
+    ->middleware('throttle:10,1');
 
  Route::get('stats', [StatsController::class, 'index']);
 
