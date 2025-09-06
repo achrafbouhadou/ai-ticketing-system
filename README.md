@@ -259,17 +259,28 @@ php artisan test
 
 ---
 
-## Roadmap
+---
 
-* ✅ Tickets CRUD + filters + pagination
-* ✅ Service/Repository architecture
-* ✅ AI classify endpoint + job
-* ✅ Stats endpoint + dashboard chart
-* ✅ CSV export via queued job + polling
-* ✅ UX polish: per‑page + skeletons
-* ⏭️ OpenAPI YAML + Swagger UI
-* ⏭️ Auth (roles), users & companies
-* ⏭️ SSE/WebSocket for live export progress
+## Assumptions & Trade-offs
+
+* **Simple Auth**: project ships with no auth; assumes single-user or protected environment.
+* **One model**: only GPT‑4o‑mini wired; switching models means editing config.
+* **Keyword fallback**: chosen for transparency and zero-cost testing, but not smart.
+* **Database queues**: easier to demo locally; in production, Redis or SQS is preferable.
+* **Export storage**: files are local `storage/app/exports/`; not cleaned up automatically.
+* **UI scope**: Vue SPA is deliberately minimal (Options API, no state lib) to stay clear.
+
+---
+
+## What I’d Do with More Time
+
+* Add authentication and roles (agent/admin).
+* Multi‑tenant (companies) with ticket ownership.
+* SSE or WebSockets for live job status instead of polling.
+* CI/CD pipeline with automated tests + deploy.
+* Better error handling & user‑facing messages.
+* Cleanup scheduler for old CSV exports.
+* Improve AI prompts and support multiple models (with retries).
 
 ---
 
